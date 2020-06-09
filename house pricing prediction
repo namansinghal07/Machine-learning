@@ -1,1 +1,150 @@
+import seaborn as sns
+import pandas as pd
 
+
+# In[3]:
+
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[12]:
+
+
+df=pd.read_csv('data.csv')
+
+
+# In[13]:
+
+
+df.describe()
+
+
+# In[14]:
+
+
+df.corr()
+
+
+# In[52]:
+
+
+df.head(50)
+
+
+# In[16]:
+
+
+sns.pairplot(data=df)
+
+
+# In[21]:
+
+
+from sklearn.model_selection import train_test_split
+
+
+# In[54]:
+
+
+df.drop(['date','street','city','statezip','country'],axis=1,inplace=True)
+
+
+# In[25]:
+
+
+X=df.drop(['price'],axis=1)
+
+
+# In[26]:
+
+
+y=df['price']
+
+
+# In[27]:
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.40, random_state=42)
+
+
+# In[28]:
+
+
+from sklearn.linear_model import LinearRegression
+
+
+# In[29]:
+
+
+lm=LinearRegression()
+
+
+# In[30]:
+
+
+lm.fit(X_train,y_train)
+
+
+# In[31]:
+
+
+print(lm.intercept_)
+
+
+# In[32]:
+
+
+lm.coef_
+
+
+# In[37]:
+
+
+cdf=pd.DataFrame(lm.coef_,X.columns,columns=['coef'])
+
+
+# In[38]:
+
+
+cdf
+
+
+# In[40]:
+
+
+predictions=lm.predict(X_test)
+
+
+# In[41]:
+
+
+predictions
+
+
+# In[51]:
+
+
+plt.scatter(y_test,predictions)
+
+
+# In[44]:
+
+
+sns.distplot((y_test-predictions),bins=50);
+
+
+# In[45]:
+
+
+from sklearn import metrics
+
+
+# In[47]:
+
+
+metrics.mean_absolute_error(y_test,predictions)
+
+
+# In[ ]:

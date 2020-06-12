@@ -1,0 +1,540 @@
+import numpy as np
+import pandas as pd 
+import seaborn as sns
+
+
+# In[100]:
+
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[101]:
+
+
+train=pd.read_csv('train.csv')
+
+
+# In[102]:
+
+
+train.head()
+
+
+# In[103]:
+
+
+train.describe()
+
+
+# In[104]:
+
+
+train.corr()
+
+
+# In[105]:
+
+
+sns.heatmap(train.isnull(),yticklabels=False,cbar=False)
+
+
+# In[106]:
+
+
+train.hist(figsize=(20,30))
+
+
+# In[107]:
+
+
+sns.distplot(train['Purchase'])
+
+
+# In[108]:
+
+
+sns.jointplot('Product_Category_1','Product_Category_2',data=train,kind='kde')
+
+
+# In[109]:
+
+
+sns.pairplot(train,hue='Gender')
+
+
+# In[110]:
+
+
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder
+
+
+# In[8]:
+
+
+train.iloc[:,9:11]
+
+
+# In[9]:
+
+
+imputer=SimpleImputer(missing_values=np.nan,strategy='mean')
+
+
+# In[10]:
+
+
+imputer=imputer.fit(train.iloc[:,9:11].values)
+
+
+# In[11]:
+
+
+train.iloc[:,9:11]=imputer.transform(train.iloc[:,9:11])
+
+
+# In[12]:
+
+
+train.iloc[:,9:11]
+
+
+# In[13]:
+
+
+train.head()
+
+
+# In[14]:
+
+
+train.drop(['User_ID','Product_ID'],axis=1,inplace=True)
+
+
+# In[15]:
+
+
+train.head()
+
+
+# In[16]:
+
+
+train['Age']=train['Age'].str.strip('+')
+
+
+# In[17]:
+
+
+train['Stay_In_Current_City_Years']=train['Stay_In_Current_City_Years'].str.strip('+').astype('float')
+
+
+# In[18]:
+
+
+train.head()
+
+
+# In[27]:
+
+
+sns.jointplot(x='Occupation',y='Purchase',
+              data=train, kind='hex'
+             )
+
+
+# In[28]:
+
+
+g = sns.FacetGrid(train,col="City_Category")
+g.map(sns.barplot, "Marital_Status", "Purchase");
+
+
+# In[29]:
+
+
+g = sns.FacetGrid(train,col="Age",row="City_Category")
+g.map(sns.barplot, "Gender", "Purchase");
+
+
+# In[30]:
+
+
+train.head()
+
+
+# In[19]:
+
+
+X=train.drop('Purchase',axis=1)
+
+
+# In[20]:
+
+
+y=train['Purchase']
+
+
+# In[21]:
+
+
+from sklearn.model_selection import train_test_split
+
+
+# In[22]:
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+
+# In[23]:
+
+
+labelencoder=LabelEncoder()
+
+
+# In[24]:
+
+
+X_train['Gender']=labelencoder.fit_transform(X_train['Gender'])
+
+
+# In[25]:
+
+
+X_train['Gender']
+
+
+# In[26]:
+
+
+X_train['Age']=labelencoder.fit_transform(X_train['Age'])
+
+
+# In[39]:
+
+
+X_train['Age']
+
+
+# In[27]:
+
+
+X_train
+
+
+# In[28]:
+
+
+
+
+
+# In[29]:
+
+
+X_test['Gender']=labelencoder.fit_transform(X_test['Gender'])
+X_test['Age']=labelencoder.fit_transform(X_test['Age'])
+
+
+# In[30]:
+
+
+X_train['City_Category']=labelencoder.fit_transform(X_train['City_Category'])
+
+
+# In[31]:
+
+
+X_test['City_Category']=labelencoder.fit_transform(X_test['City_Category'])
+
+
+# In[32]:
+
+
+from sklearn.preprocessing import StandardScaler
+
+
+# In[33]:
+
+
+scaler=StandardScaler()
+
+
+# In[34]:
+
+
+X_train=scaler.fit_transform(X_train)
+
+
+# In[35]:
+
+
+X_test=scaler.fit_transform(X_test)
+
+
+# In[57]:
+
+
+X_train
+
+
+# In[58]:
+
+
+X_test
+
+
+# In[36]:
+
+
+from sklearn.ensemble import RandomForestRegressor
+
+
+# In[40]:
+
+
+from sklearn.metrics import mean_absolute_error
+
+
+# In[54]:
+
+
+def get_mae(max_leaf_nodes,X_train,X_test,y_train,y_test):
+    model=RandomForestRegressor(max_leaf_nodes=max_leaf_nodes,random_state=0)
+    model.fit(X_train,y_train)
+    y_pred=model.predict(X_test)
+    mae=mean_absolute_error(y_test,y_pred)
+    return mae
+
+
+# In[55]:
+
+
+for max_leaf_nodes in [5,50,100,300,400,600,700,800,850,900,1000,1100]:
+    my_mae=get_mae(max_leaf_nodes,X_train,X_test,y_train,y_test)
+    print("max_leaf_nodes:{} \t mean_absolute_error:{}".format(max_leaf_nodes,my_mae))
+
+
+# In[56]:
+
+
+test=pd.read_csv("test.csv")
+
+
+# In[57]:
+
+
+test
+
+
+# In[58]:
+
+
+
+imputer=imputer.fit(test.iloc[:,9:11].values)
+
+test.iloc[:,9:11]=imputer.transform(test.iloc[:,9:11])
+
+
+# In[59]:
+
+
+test.head()
+
+
+# In[60]:
+
+
+test.drop(['User_ID','Product_ID'], axis=1, inplace=True)
+
+
+# In[62]:
+
+
+test['Age']=(test['Age'].str.strip('+'))
+
+
+# In[63]:
+
+
+test['Stay_In_Current_City_Years']=(test['Stay_In_Current_City_Years'].str.strip('+').astype('float'))
+
+
+# In[64]:
+
+
+from sklearn.preprocessing import LabelEncoder
+labelencoder = LabelEncoder()
+
+
+# In[66]:
+
+
+test.head()
+
+
+# In[67]:
+
+
+test['Gender']=labelencoder.fit_transform(test['Gender'])
+
+
+# In[68]:
+
+
+test['Age']=labelencoder.fit_transform(test['Age'])
+
+
+# In[70]:
+
+
+test['City_Category']=labelencoder.fit_transform(test['City_Category'])
+
+
+# In[71]:
+
+
+scalertest = StandardScaler()
+test= scalertest.fit_transform(test)
+
+
+# In[72]:
+
+
+regressor=RandomForestRegressor(n_estimators=750,random_state=0)
+
+
+# In[73]:
+
+
+regressor.fit(X_train,y_train)
+
+
+# In[74]:
+
+
+y_pred=regressor.predict(test)
+
+
+# In[127]:
+
+
+y_pred
+
+
+# In[78]:
+
+
+pred=pd.DataFrame(y_pred)
+
+
+# In[81]:
+
+
+sub_df=pd.read_csv('sample_submission_V9Inaty.csv')
+
+
+# In[90]:
+
+
+sub_df['Product_ID']
+
+
+# In[91]:
+
+
+datasets=pd.concat([pred,sub_df['User_ID'],sub_df['Product_ID']],axis=1)
+
+
+# In[96]:
+
+
+datasets.colomns=['Purchase','User_ID','Product_ID']
+
+
+# In[98]:
+
+
+datasets.to_csv('sample_sub.csv',index=False)
+
+
+# In[111]:
+
+
+
+from xgboost.sklearn import XGBRegressor
+
+
+# In[115]:
+
+
+import xgboost as xgb
+
+
+# In[117]:
+
+
+
+from xgboost.sklearn import XGBRegressor
+
+
+# In[119]:
+
+
+xgb=XGBRegressor(n_estimators=700,learning_rate=0.2,gamma=0,min_child_weight=10,
+                           subsample=0.8,colsample_bytree=1,max_depth=7)
+
+
+# In[120]:
+
+
+XGB_model=xgb.fit(X_train,y_train)
+
+
+# In[121]:
+
+
+pred=XGB_model.predict(test)
+
+
+# In[130]:
+
+
+pred
+
+
+# In[128]:
+
+
+pre=pd.DataFrame(pred)
+
+sub_df=pd.read_csv('sample_submission_V9Inaty.csv')
+
+sub_df['Product_ID']
+
+
+# In[129]:
+
+
+datasets=pd.concat([pre,sub_df['User_ID'],sub_df['Product_ID']],axis=1)
+
+
+# In[131]:
+
+
+datasets.colomns=['Purchase','User_ID','Product_ID']
+
+
+# In[132]:
+
+
+datasets.to_csv('sample_sub2.csv',index=False)
+
+
+# In[ ]:
+
+
+
+
